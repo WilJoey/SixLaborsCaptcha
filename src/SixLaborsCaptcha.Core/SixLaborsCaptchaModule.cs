@@ -1,18 +1,19 @@
-﻿using System;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System;
+
 using System.IO;
 using System.Threading.Tasks;
-using System.Numerics;
 
 namespace SixLaborsCaptcha.Core
 {
   public class SixLaborsCaptchaModule : ISixLaborsCaptchaModule
   {
     private readonly SixLaborsCaptchaOptions _options;
+
     public SixLaborsCaptchaModule(SixLaborsCaptchaOptions options)
     {
       _options = options;
@@ -36,7 +37,7 @@ namespace SixLaborsCaptcha.Core
         {
           var location = new PointF(startWith + position, random.Next(6, 13));
           imgText.Mutate(ctx => ctx.DrawText(c.ToString(), font, _options.TextColor[random.Next(0, _options.TextColor.Length)], location));
-          position += TextMeasurer.Measure(c.ToString(), new TextOptions(font)).Width;
+          position += TextMeasurer.MeasureSize(c.ToString(), new TextOptions(font)).Width;
         }
 
         //add rotation
@@ -44,10 +45,9 @@ namespace SixLaborsCaptcha.Core
         imgText.Mutate(ctx => ctx.Transform(rotation));
 
         // add the dynamic image to original image
-        ushort size = (ushort)TextMeasurer.Measure(stringText, new TextOptions(font)).Width;
+        ushort size = (ushort)TextMeasurer.MeasureSize(stringText, new TextOptions(font)).Width;
         var img = new Image<Rgba32>(size + 10 + 5, _options.Height);
         img.Mutate(ctx => ctx.BackgroundColor(_options.BackgroundColor[random.Next(0, _options.BackgroundColor.Length)]));
-
 
         Parallel.For(0, _options.DrawLines, i =>
         {
@@ -55,11 +55,11 @@ namespace SixLaborsCaptcha.Core
           int y0 = random.Next(10, img.Height);
           int x1 = random.Next(img.Width - random.Next(0, ((int)(img.Width * 0.25))), img.Width);
           int y1 = random.Next(0, img.Height);
-          img.Mutate(ctx =>
-                  ctx.DrawLines(_options.DrawLinesColor[random.Next(0, _options.DrawLinesColor.Length)],
-                                Extensions.GenerateNextFloat(_options.MinLineThickness, _options.MaxLineThickness),
-                                new PointF[] { new PointF(x0, y0), new PointF(x1, y1) })
-                  );
+          img.Mutate(ctx => ctx.DrawLine(
+            _options.DrawLinesColor[random.Next(0, _options.DrawLinesColor.Length)],
+              Extensions.GenerateNextFloat(_options.MinLineThickness, _options.MaxLineThickness),
+              new PointF(x0, y0), new PointF(x1, y1)
+          ));
         });
 
         img.Mutate(ctx => ctx.DrawImage(imgText, 0.80f));
@@ -68,11 +68,11 @@ namespace SixLaborsCaptcha.Core
         {
           int x0 = random.Next(0, img.Width);
           int y0 = random.Next(0, img.Height);
-          img.Mutate(
-                      ctx => ctx
-                          .DrawLines(_options.NoiseRateColor[random.Next(0, _options.NoiseRateColor.Length)],
-                          Extensions.GenerateNextFloat(0.5, 1.5), new PointF[] { new Vector2(x0, y0), new Vector2(x0, y0) })
-                  );
+          img.Mutate(ctx => ctx.DrawLine(
+            _options.NoiseRateColor[random.Next(0, _options.NoiseRateColor.Length)],
+            Extensions.GenerateNextFloat(0.5, 1.5),
+            new PointF(x0, y0), new PointF(x0 + 1, y0 + 1)
+          ));
         });
 
         img.Mutate(x =>
@@ -88,7 +88,6 @@ namespace SixLaborsCaptcha.Core
       }
 
       return result;
-
     }
 
     private AffineTransformBuilder getRotation()
@@ -102,6 +101,5 @@ namespace SixLaborsCaptcha.Core
       var result = builder.PrependRotationDegrees(rotationDegrees, pointF);
       return result;
     }
-
   }
 }

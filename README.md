@@ -10,6 +10,12 @@ SixLaborsCaptcha is a simple cross-platform NuGet package for generating image c
 
 # What's New
 
+## Version 0.2.3 - Oct 13, 2023
+#### Fix
+* 修改為支援 .NET 6.0
+* 修正 DrawLine 畫點時，起訖位置不能為同一點的問題
+
+
 ## Version 0.2.2 - Sep 26, 2022
 #### Fix
 * Fixed a bug in draw lines feature

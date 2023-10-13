@@ -1,16 +1,10 @@
-﻿using System.Threading;
-using SixLaborsCaptcha.Core;
-using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SixLaborsCaptcha.Core;
 using System.IO;
-using System;
 
 namespace ConsoleAppSample
 {
-  class Program
+  internal class Program
   {
     static void Main(string[] args)
     {
@@ -22,7 +16,6 @@ namespace ConsoleAppSample
         FontFamilies = new string[] { "ubuntu" },
       });
 
-
       for (int i = 0; i < 10; i++)
       {
         var key = Extensions.GetUniqueKey(6);
@@ -30,7 +23,6 @@ namespace ConsoleAppSample
         File.WriteAllBytes($"six-labors-captcha-{i}.png", result);
         //System.Threading.Thread.Sleep(1000);
       }
-
     }
   }
 }
